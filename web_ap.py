@@ -164,7 +164,7 @@ if uploaded_file is not None:
         st.stop()
 
     st.write("#### Original Dataset Preview")
-    st.dataframe(df.head())
+    st.dataframe(df)
 
     if df.empty:
         st.warning("Uploaded dataset is empty.")
@@ -174,7 +174,7 @@ if uploaded_file is not None:
     df = auto_clean_dataframe(df)
 
     st.write("#### Cleaned Dataset Preview")
-    st.dataframe(df.head())
+    st.dataframe(df)
 
     # AUTO VISUALIZATION AFTER CLEANING
     auto_visualization(df)
