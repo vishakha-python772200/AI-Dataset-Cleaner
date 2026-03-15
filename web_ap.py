@@ -13,14 +13,12 @@ st.set_page_config(page_title="AI Dataset Type Predictor", layout="wide")
 st.title("📊  *AI Dataset Cleaner  And Visualization * ")
 
 
-# ------------------- Load Models & Scaler -------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(BASE_DIR, "models")
+# ***** FIXED MODEL LOADING FOR STREAMLIT CLOUD *****
 
-rf_model = joblib.load(os.path.join(model_path, "rf_model.pkl"))
-iso_model = joblib.load(os.path.join(model_path, "iso_model.pkl"))
-scaler = joblib.load(os.path.join(model_path, "scaler.pkl"))
-train_columns = joblib.load(os.path.join(model_path, "train_columns.pkl"))
+rf_model = joblib.load("rf_model.pkl")
+iso_model = joblib.load("iso_model.pkl")
+scaler = joblib.load("scaler.pkl")
+train_columns = joblib.load("train_columns.pkl")
 
 # FULL AUTO CLEANING FUNCTION
 def auto_clean_dataframe(df):
