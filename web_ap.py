@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 # --------- Streamlit Page Config ---------
 st.set_page_config(page_title="AI Dataset Type Predictor", layout="wide")
-st.title("📊  *AI Dataset Cleaner  And Visualization * ")
+st.title("📊  AI Dataset Cleaner And Visualization")
 
 
 # ***** FIXED MODEL LOADING FOR STREAMLIT CLOUD *****
@@ -23,16 +23,24 @@ train_columns = joblib.load("train_columns.pkl")
 # FULL AUTO CLEANING FUNCTION
 def auto_clean_dataframe(df):
     df = df.copy()
+
     # remove duplicate columns
     df = df.loc[:, ~df.columns.duplicated()]
+
     # remove duplicate rows
     df = df.drop_duplicates()
-    # replace garbage
-    df = df.replace(["None","none","NULL","null","\\",""," ","-","--"],np.nan)
 
-    # try numeric convert
+    # replace garbage
+    df = df.replace(["None", "none", "NULL", "null", "\\", "", " ", "-", "--"], np.nan)
+
+    # try numeric convert safely
     for col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors="ignore")
+        if df[col].dtype == "object":
+            converted = pd.to_numeric(df[col], errors="coerce")
+
+            # jar kahi values numeric astil tarach replace kar
+            if converted.notna().sum() > 0:
+                df[col] = converted
 
     # numeric clean
     for col in df.select_dtypes(include=np.number):
@@ -58,7 +66,8 @@ def auto_clean_dataframe(df):
 
         # skew reduction
         if df[col].skew() > 0.75:
-            df[col] = np.log1p(df[col])
+            if (df[col] >= 0).all():
+                df[col] = np.log1p(df[col])
 
     # categorical clean
     for col in df.select_dtypes(include="object"):
@@ -85,14 +94,15 @@ def prepare_new_data(df_new, train_columns, scaler):
     df_new = df_new.reindex(columns=train_columns, fill_value=0)
 
     try:
-        df_new = pd.DataFrame(scaler.transform(df_new),columns=train_columns)
+        df_new = pd.DataFrame(scaler.transform(df_new), columns=train_columns)
     except Exception as e:
         st.error(f"Scaling Error: {e}")
         return None
 
     return df_new
 
-#Auto visualization#
+
+# Auto visualization
 def auto_visualization(df):
 
     st.write("## Auto Data Visualization")
@@ -142,14 +152,13 @@ def auto_visualization(df):
 
         st.write("### Pair Plot")
 
-        pair = sns.pairplot(df[num_cols[:4]].sample(min(120, len(df))),height=1.6)
+        pair = sns.pairplot(df[num_cols[:4]].sample(min(120, len(df))), height=1.6)
 
         st.pyplot(pair)
         plt.close()
 
     except:
         st.warning("Pairplot skipped")
-
 
 
 # ------------------- Main App -------------------
